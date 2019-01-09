@@ -7,6 +7,23 @@ Here's a screenshot:
 ## About the code
 It's node.js it talks to S3 and it uses [patternfly](http://www.patternfly.org/) for the UI.
 
+## Configuration
+
+The following environment variables need to be set:
+
+* `S3_BUCKET_NAME` - Name of S3 bucket (like "my-bucket")
+
+If the bucket is not public, the following must also be set:
+
+* `AWS_ACCESS_KEY_ID`
+* `AWS_SECRET_ACCESS_KEY`
+
+Optional configuration:
+
+* `IMG_PATH` - Path inside of bucket to image directory
+* `AWS_REGION` - Defaults to "us-east-1"
+* `PAGE_TITLE` - Title at the top of the page, defaults to "AWS S3 Image Viewer"
+
 ## How to use this service
 1. ```npm install```
 2. ```npm start```

@@ -37,8 +37,6 @@ block nav
 block content
   .container-fluid.container-cards-pf
     br
-    p Welcome to #{title} - you are viewing S3 bucket #[strong #{showBucket}]
-
     - var imagesArray = JSON.parse(images);
     if imagesArray.length < 1
       .blank-slate-pf

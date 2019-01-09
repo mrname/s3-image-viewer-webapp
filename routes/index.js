@@ -6,6 +6,7 @@ var awssecretkey = process.env.AWS_SECRET_ACCESS_KEY || '';
 var awsregion = process.env.AWS_REGION || 'us-east-1';
 var showBucket = process.env.S3_BUCKET;
 var imgPath = process.env.IMG_PATH;
+var pageTitle = process.env.PAGE_TITLE || 'AWS S3 Image Viewer'; 
 var AWS = require('aws-sdk');
 AWS.config.update({accessKeyId: awskey, secretAccessKey: awssecretkey, region: awsregion});
 var s3 = new AWS.S3();
@@ -23,17 +24,47 @@ function filterImages(data) {
 //----------------------------------------------------------------------------
 // loop through S3 formatted API results and build an images list
 //----------------------------------------------------------------------------
-function buildImagesListFromS3Data(bucketname, data) {
-    const S3_PREFIX = 'https://s3.amazonaws.com/' + bucketname + '/';
-    var images = [];
-    var contents = data.Contents
-    //console.log("iterating " + JSON.stringify(contents));
-    for (var iter in contents) {
-        // any validation of key can go here
-        //console.log("adding " + S3_PREFIX + contents[iter].Key)
-        images.push(S3_PREFIX + contents[iter].Key);
+function buildImagesListFromS3Data(params, images, cb) {
+    const S3_PREFIX = 'https://s3.amazonaws.com/' + showBucket + '/';
+    if (!images) {
+        images = [];
     }
-    return images;
+    if (!params) {
+        params = {
+          Bucket: showBucket,
+          //ContinuationToken: 'STRING_VALUE',
+          //Delimiter: 'STRING_VALUE',
+          //EncodingType: url,
+          //FetchOwner: false,
+          //MaxKeys: 50,
+          Prefix: imgPath,
+          //RequestPayer: requester,
+          //StartAfter: imgPath
+        };
+    }
+    s3.listObjectsV2(params, function(err, data) {
+      if (err) {
+        console.log(err, err.stack); // an error occurred
+        return images;
+      } else {
+        //console.log(data);
+        var contents = data.Contents
+        //console.log("iterating " + JSON.stringify(contents));
+        for (var iter in contents) {
+            // any validation of key can go here
+            console.log("adding " + S3_PREFIX + contents[iter].Key)
+            images.push(S3_PREFIX + contents[iter].Key);
+        }
+        if (data.isTruncated) {
+           params.Marker = contents[contents.length-1].Key; 
+           images = buildImagesListFromS3Data(params, images, cb);
+        }
+        else {
+            console.log(images);
+            cb(images);
+        }
+      }
+    });
 }
 
 //----------------------------------------------------------------------------
@@ -47,39 +78,10 @@ router.get('/', function(req, res, next) {
   }
   console.log('loading bucket: ' + showBucket);
 
-  // for DEBUGGING
-  if (showBucket === 'FakeBucket') {
-    imagesArray = ['https://s3.amazonaws.com/rhdj2017-selfie-in/59bc8771815ba5440626d40d-59bc87725d92c77569d4ddc1.png',
-                 'https://s3.amazonaws.com/rhdj2017-selfie-in/59bc8771815ba5440626d40d-59bc87725d92c77569d4ddc1.png',
-                 'https://s3.amazonaws.com/rhdj2017-selfie-in/59bc8771815ba5440626d40d-59bc87725d92c77569d4ddc1.png',
-                 'https://s3.amazonaws.com/rhdj2017-selfie-in/59bc8771815ba5440626d40d-59bc87725d92c77569d4ddc1.png'];
-    res.render('index', { title: 'AWS S3 Image Viewer', showBucket: showBucket, images: JSON.stringify(imagesArray), buckets: JSON.stringify(bucketIds)});
-  } else {
-    // query for images
-    console.log('querying S3 for objects in ' + showBucket);
-    var params = {
-      Bucket: showBucket,
-      //ContinuationToken: 'STRING_VALUE',
-      //Delimiter: 'STRING_VALUE',
-      //EncodingType: url,
-      //FetchOwner: false,
-      //MaxKeys: 50,
-      Prefix: imgPath,
-      //RequestPayer: requester,
-      //StartAfter: imgPath
-    };
-    s3.listObjectsV2(params, function(err, data) {
-      if (err) {
-        console.log(err, err.stack); // an error occurred
-        res.render('index', { title: 'AWS S3 Image Viewer', showBucket: showBucket, images: JSON.stringify(imagesArray)});
-      } else {
-        //console.log(data);
-        imagesArray = buildImagesListFromS3Data(showBucket, data);
-        filteredImagesArray = filterImages(imagesArray);
-        res.render('index', { title: 'AWS S3 Image Viewer', showBucket: showBucket, images: JSON.stringify(filteredImagesArray)});
-      }
-    });
-  }
+  buildImagesListFromS3Data(null, null, function(result) {
+    filteredImagesArray = filterImages(result);
+    res.render('index', { title: pageTitle, showBucket: showBucket, images: JSON.stringify(filteredImagesArray)});
+  });
 });
 
 module.exports = router;
