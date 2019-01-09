@@ -22,8 +22,15 @@ Optional configuration:
 * `PAGE_TITLE` - Title at the top of the page, defaults to "AWS S3 Image Viewer"
 
 ## How to use this service
+
+### Locally
+
 1. ```npm install```
 2. ```npm start```
+
+### In Docker
+
+```docker run -p 3000:3000 madscientist/s3-image-viewer-webapp```
 
 ### On OpenShift
 ```oc new-app https://github.com/dudash/s3-image-viewer-webapp.git```
