@@ -12,9 +12,6 @@ It's node.js it talks to S3 and it uses [patternfly](http://www.patternfly.org/)
 The following environment variables need to be set:
 
 * `S3_BUCKET_NAME` - Name of S3 bucket (like "my-bucket")
-
-If the bucket is not public, the following must also be set:
-
 * `AWS_ACCESS_KEY_ID`
 * `AWS_SECRET_ACCESS_KEY`
 

@@ -15,24 +15,9 @@ block nav
           span.icon-bar
           span.icon-bar
         a(href='/', class='navbar-brand') 
-          //img(class='navbar-brand-icon', src='/bower_components/patternfly/dist/img/logo-alt.svg', alt='')
-          img(class='navbar-brand-name', alt='AWS S3 Image Viewer')
+          h1= title
       #navbarCollapseId1.collapse.navbar-collapse
         ul.nav.navbar-nav.navbar-right.navbar-utility
-          li.dropdown
-            a(href='#0', class='dropdown-toggle nav-item-iconic' id='dropdownMenuHelpButton' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true')
-              span(title='Help', class='pficon pficon-help fa-2x')
-              span(class='caret')
-            ul(class='dropdown-menu', aria-labelledby='dropdownMenuHelpButton')
-              li: a(href='/about') About
-        ul.nav.navbar-nav.navbar-primary
-          li.dropdown
-            a(href='#0', class='dropdown-toggle nav-item-iconic' id='dropdownMenuPlusButton' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true')
-              span(title='Add', class='fa fa-plus')
-              span(class='caret')
-            ul(class='dropdown-menu', aria-labelledby='dropdownMenuPlusButton')
-              // TODO: make this an a(href=) - not sure how to get it to toggle the modal correctly
-              li: button(class='btn btn-default wizard-pf-open wizard-pf-complete' data-target='#adds3bucket') Add S3 Bucket
 
 block content
   .container-fluid.container-cards-pf
