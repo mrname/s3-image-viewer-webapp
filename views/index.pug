@@ -33,23 +33,6 @@ block nav
             ul(class='dropdown-menu', aria-labelledby='dropdownMenuPlusButton')
               // TODO: make this an a(href=) - not sure how to get it to toggle the modal correctly
               li: button(class='btn btn-default wizard-pf-open wizard-pf-complete' data-target='#adds3bucket') Add S3 Bucket
-          - var bucketsArray = JSON.parse(buckets);
-          if bucketsArray.length < 1
-            .toast-pf.toast-pf-top-right.alert-warning.alert-dismissable.alert
-              button(type='button' class='close' data-dismiss='alert' aria-hidden='true')
-                span.pficon.pficon-close
-              span.pficon.pficon-warning-triangle-o
-              | No buckets have been configured
-            li
-              a(href='#0')
-                span(class='pficon pficon-warning-triangle-o' data-toggle='tooltip' title='NONE')
-                span(class='list-group-item-value') #[em   NO BUCKETS]
-          else
-            each bucketIter in bucketsArray ? bucketsArray: ['No Buckets!']
-              li
-                a(href='/?showBucket='+ bucketIter)
-                  span(class='fa fa-bitbucket' data-toggle='tooltip' title=bucketIter)
-                  span(class='list-group-item-value') #[  #{bucketIter}]
 
 block content
   .container-fluid.container-cards-pf
@@ -73,7 +56,7 @@ block content
                   img(src=imageUrl, alt='Image could not be rendered', style='max-height: 100%; width: 100%; object-fit: contain')
               //.card-pf-title.text-center #{imageUrl}
               .card-pf-items.text-center
-                a(href=imageUrl)
+                a(href=imageUrl, download)
                   span.fa.fa-arrow-circle-o-down.fa-2x
     
 

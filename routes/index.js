@@ -4,6 +4,8 @@ var router = express.Router();
 var awskey = process.env.AWS_ACCESS_KEY_ID || '';
 var awssecretkey = process.env.AWS_SECRET_ACCESS_KEY || '';
 var awsregion = process.env.AWS_REGION || 'us-east-1';
+var showBucket = process.env.S3_BUCKET;
+var imgPath = process.env.IMG_PATH;
 var AWS = require('aws-sdk');
 AWS.config.update({accessKeyId: awskey, secretAccessKey: awssecretkey, region: awsregion});
 var s3 = new AWS.S3();
@@ -39,14 +41,9 @@ function buildImagesListFromS3Data(bucketname, data) {
 //----------------------------------------------------------------------------
 router.get('/', function(req, res, next) {
 
-  // TODO pull these from ENV vars + user added buckets
-  var bucketIds = ['rhdj2017-selfie-out', 'rhdj2017-selfie-in', 'FakeBucket'];
-
   var imagesArray = [];
-  var showBucket = req.query.showBucket;
   if (!showBucket) { 
     console.log('no bucket, forcing to first bucket');
-    showBucket = bucketIds[0]
   }
   console.log('loading bucket: ' + showBucket);
 
@@ -61,25 +58,25 @@ router.get('/', function(req, res, next) {
     // query for images
     console.log('querying S3 for objects in ' + showBucket);
     var params = {
-      Bucket: showBucket
+      Bucket: showBucket,
       //ContinuationToken: 'STRING_VALUE',
       //Delimiter: 'STRING_VALUE',
       //EncodingType: url,
       //FetchOwner: false,
       //MaxKeys: 50,
-      //Prefix: 'STRING_VALUE',
+      Prefix: imgPath,
       //RequestPayer: requester,
-      //StartAfter: 'STRING_VALUE'
+      //StartAfter: imgPath
     };
     s3.listObjectsV2(params, function(err, data) {
       if (err) {
         console.log(err, err.stack); // an error occurred
-        res.render('index', { title: 'AWS S3 Image Viewer', showBucket: showBucket, images: JSON.stringify(imagesArray), buckets: JSON.stringify(bucketIds)});
+        res.render('index', { title: 'AWS S3 Image Viewer', showBucket: showBucket, images: JSON.stringify(imagesArray)});
       } else {
         //console.log(data);
         imagesArray = buildImagesListFromS3Data(showBucket, data);
         filteredImagesArray = filterImages(imagesArray);
-        res.render('index', { title: 'AWS S3 Image Viewer', showBucket: showBucket, images: JSON.stringify(filteredImagesArray), buckets: JSON.stringify(bucketIds)});
+        res.render('index', { title: 'AWS S3 Image Viewer', showBucket: showBucket, images: JSON.stringify(filteredImagesArray)});
       }
     });
   }
