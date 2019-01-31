@@ -10,6 +10,7 @@ var pageTitle = process.env.PAGE_TITLE || 'AWS S3 Image Viewer';
 var AWS = require('aws-sdk');
 AWS.config.update({accessKeyId: awskey, secretAccessKey: awssecretkey, region: awsregion});
 var s3 = new AWS.S3();
+const S3_PREFIX = 'https://s3.amazonaws.com/' + showBucket + '/';
 
 //var IMAGE_TYPEFILTER = process.env.IMAGE_TYPEFILTER || '.png,.jpg';
 
@@ -18,14 +19,21 @@ var s3 = new AWS.S3();
 //----------------------------------------------------------------------------
 function filterImages(data) {
     // TODO filter based on types configured (case insensitive)
-    return data;
+    // Since we have the full objects here, we now need to return an array of
+    // just the actual URLs
+    images = [];
+    for (var iter in data) {
+        // any validation of key can go here
+        console.log("adding " + S3_PREFIX + data[iter].Key)
+        images.push(S3_PREFIX + data[iter].Key);
+    }
+    return images;
 }
 
 //----------------------------------------------------------------------------
 // loop through S3 formatted API results and build an images list
 //----------------------------------------------------------------------------
 function buildImagesListFromS3Data(params, images, cb) {
-    const S3_PREFIX = 'https://s3.amazonaws.com/' + showBucket + '/';
     if (!images) {
         images = [];
     }
@@ -50,13 +58,11 @@ function buildImagesListFromS3Data(params, images, cb) {
         //console.log(data);
         debugger;
         var contents = data.Contents
-        // Sort them by timestamp to begin with
         //console.log("iterating " + JSON.stringify(contents));
         for (var iter in contents) {
             // any validation of key can go here
-            console.log(contents[iter]);
-            console.log("adding " + S3_PREFIX + contents[iter].Key)
-            images.push(S3_PREFIX + contents[iter].Key);
+            //images.push(S3_PREFIX + contents[iter].Key);
+            images.push(contents[iter]);
         }
         if (data.isTruncated) {
            params.Marker = contents[contents.length-1].Key; 
@@ -64,6 +70,12 @@ function buildImagesListFromS3Data(params, images, cb) {
         }
         else {
             console.log(images);
+            console.log('Sorting images by datetime');
+            images.sort(function(a,b){
+		      return new Date(b.LastModified) - new Date(a.LastModified);
+            });
+            console.log(images);
+            // sort by descending timestamp by default
             cb(images);
         }
       }
