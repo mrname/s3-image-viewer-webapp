@@ -43,6 +43,8 @@ block content
                   span.fa.fa-arrow-circle-o-down.fa-2x
     
 
+  input(data-provide="datepicker", id='start-date', class='datepicker')
+  input(data-provide="datepicker", id='end-date', class='datepicker')
   div(class='modal' id='adds3bucket' tabindex='-1' role='dialog')
     .modal-dialog.modal-lg.wizard-pf
       .modal-content
@@ -67,6 +69,10 @@ block content
 
   script(type='text/javascript').
     $(document).ready(function() {
+      $('.datepicker').datepicker();
+      $('.datepicker').change(function() {
+        console.log($(this).val());
+      });
       // matchHeight the contents of each .card-pf and then the .card-pf itself
       $(".row-cards-pf > [class*='col'] > .card-pf .card-pf-title").matchHeight();
       $(".row-cards-pf > [class*='col'] > .card-pf > .card-pf-body").matchHeight();

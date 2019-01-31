@@ -48,10 +48,13 @@ function buildImagesListFromS3Data(params, images, cb) {
         return images;
       } else {
         //console.log(data);
+        debugger;
         var contents = data.Contents
+        // Sort them by timestamp to begin with
         //console.log("iterating " + JSON.stringify(contents));
         for (var iter in contents) {
             // any validation of key can go here
+            console.log(contents[iter]);
             console.log("adding " + S3_PREFIX + contents[iter].Key)
             images.push(S3_PREFIX + contents[iter].Key);
         }
