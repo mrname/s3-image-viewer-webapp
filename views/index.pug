@@ -30,13 +30,13 @@ block content
           p #[strong No Images Found]
     else
       .row.row-cards-pf
-      each imageUrl in imagesArray ? imagesArray: ['DANGER-WILL-ROBINSON']
+      each image in imagesArray ? imagesArray: ['DANGER-WILL-ROBINSON']
         //.col-xs-12.col-sm-6.col-md-4.col-lg-3
         .col-xs-12.col-sm-4.col-md-3.col-lg-2
-          .card-pf.card-pf-view
+          .card-pf.card-pf-view(data-date=image.LastModified)
             .card-pf-body
               .card-pf-top-element
-                  img(src=imageUrl, alt='Image could not be rendered', style='max-height: 100%; width: 100%; object-fit: contain')
+                  img(src=image.fullUrl, alt='Image could not be rendered', style='max-height: 100%; width: 100%; object-fit: contain')
               //.card-pf-title.text-center #{imageUrl}
               .card-pf-items.text-center
                 a(href=imageUrl, download)
@@ -45,6 +45,7 @@ block content
 
   input(data-provide="datepicker", id='start-date', class='datepicker')
   input(data-provide="datepicker", id='end-date', class='datepicker')
+  button(type="button", id="dateFilterButton", value="Filter By Date")= "Filter By Date"
   div(class='modal' id='adds3bucket' tabindex='-1' role='dialog')
     .modal-dialog.modal-lg.wizard-pf
       .modal-content
@@ -70,9 +71,15 @@ block content
   script(type='text/javascript').
     $(document).ready(function() {
       $('.datepicker').datepicker();
-      $('.datepicker').change(function() {
+      $('#dateFilterButton').click(function() {
         console.log($(this).val());
+        var start = $('#start-date').val();
+        var end = $('#end-date').val();
+        console.log(start);
+        console.log(end);
+        document.location.href = '/?start_date=' + start + '&end_date=' + end;
       });
+
       // matchHeight the contents of each .card-pf and then the .card-pf itself
       $(".row-cards-pf > [class*='col'] > .card-pf .card-pf-title").matchHeight();
       $(".row-cards-pf > [class*='col'] > .card-pf > .card-pf-body").matchHeight();
