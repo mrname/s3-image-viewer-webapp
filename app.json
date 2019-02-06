@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dokku": {
-      "predeploy": "npm install -g bower && bower install"
+      "predeploy": "npm install -g bower && bower install --allow-root"
     }
   }
 }
