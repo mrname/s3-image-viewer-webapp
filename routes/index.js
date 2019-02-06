@@ -7,7 +7,7 @@ var awsregion = process.env.AWS_REGION || 'us-east-1';
 var showBucket = process.env.S3_BUCKET;
 var imgPath = process.env.IMG_PATH;
 var pageTitle = process.env.PAGE_TITLE || 'AWS S3 Image Viewer'; 
-const pageSize = process.env.PAGE_SIZE || 2;
+const pageSize = process.env.PAGE_SIZE || 100;
 
 const s3 = require('s3-cached')({
   bucket: showBucket,

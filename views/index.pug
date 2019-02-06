@@ -22,6 +22,9 @@ block nav
 block content
   .container-fluid.container-cards-pf
     br
+    input(data-provide="datepicker", id='start-date', class='datepicker')
+    input(data-provide="datepicker", id='end-date', class='datepicker')
+    button(type="button", id="dateFilterButton", value="Filter By Date")= "Filter By Date"
     nav(aria-label='...', style='text-align: center')
       ul.pagination
         - var n = 1
@@ -49,9 +52,6 @@ block content
                   span.fa.fa-arrow-circle-o-down.fa-2x
     
 
-  input(data-provide="datepicker", id='start-date', class='datepicker')
-  input(data-provide="datepicker", id='end-date', class='datepicker')
-  button(type="button", id="dateFilterButton", value="Filter By Date")= "Filter By Date"
   div(class='modal' id='adds3bucket' tabindex='-1' role='dialog')
     .modal-dialog.modal-lg.wizard-pf
       .modal-content
