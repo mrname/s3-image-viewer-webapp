@@ -22,6 +22,12 @@ block nav
 block content
   .container-fluid.container-cards-pf
     br
+    nav(aria-label='...', style='text-align: center')
+      ul.pagination
+        - var n = 1
+        while n <= numPages
+          li.page-item
+            span.page-link= n++
     - var imagesArray = JSON.parse(images);
     if imagesArray.length < 1
       .blank-slate-pf
@@ -73,11 +79,17 @@ block content
       $('.datepicker').datepicker();
       $('#dateFilterButton').click(function() {
         console.log($(this).val());
+        var urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('start_date', $('#start-date').val());
+        urlParams.set('end_date', $('#end-date').val());
+        document.location.href = '/?' + urlParams.toString();
+      });
+      $('.page-link').click(function() {
         var start = $('#start-date').val();
         var end = $('#end-date').val();
-        console.log(start);
-        console.log(end);
-        document.location.href = '/?start_date=' + start + '&end_date=' + end;
+        var urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('page', $(this).text());
+        document.location.href = '/?' + urlParams.toString();
       });
 
       // matchHeight the contents of each .card-pf and then the .card-pf itself

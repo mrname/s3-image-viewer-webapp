@@ -77,10 +77,13 @@ function buildImagesListFromS3Data(params, images, cb) {
           return new Date(b.LastModified) - new Date(a.LastModified);
         });
 
+        var numPages = Math.ceil(images.length / pageSize);
+        console.log(numPages);
+
         // Paginate
         var paginatedImages = images.slice(startImg, endImg);
 
-        cb(paginatedImages);
+        cb(paginatedImages, numPages);
     }).catch((err) => {
         console.log(err, err.stack); // an error occurred
     });
@@ -105,9 +108,9 @@ router.get('/', function(req, res, next) {
   }
   console.log('loading bucket: ' + showBucket);
 
-  buildImagesListFromS3Data(params, null, function(result) {
+  buildImagesListFromS3Data(params, null, function(result, numPages) {
     filteredImagesArray = filterImages(result);
-    res.render('index', { title: pageTitle, showBucket: showBucket, images: JSON.stringify(filteredImagesArray)});
+    res.render('index', { title: pageTitle, showBucket: showBucket, images: JSON.stringify(filteredImagesArray), numPages: numPages });
   });
 });
 
