@@ -22,6 +22,15 @@ block nav
 block content
   .container-fluid.container-cards-pf
     br
+    input(data-provide="datepicker", id='start-date', class='datepicker')
+    input(data-provide="datepicker", id='end-date', class='datepicker')
+    button(type="button", id="dateFilterButton", value="Filter By Date")= "Filter By Date"
+    nav(aria-label='...', style='text-align: center')
+      ul.pagination
+        - var n = 1
+        while n <= numPages
+          li.page-item
+            span.page-link= n++
     - var imagesArray = JSON.parse(images);
     if imagesArray.length < 1
       .blank-slate-pf
@@ -30,17 +39,13 @@ block content
           p #[strong No Images Found]
     else
       .row.row-cards-pf
-      each imageUrl in imagesArray ? imagesArray: ['DANGER-WILL-ROBINSON']
+      each image in imagesArray ? imagesArray: ['DANGER-WILL-ROBINSON']
         //.col-xs-12.col-sm-6.col-md-4.col-lg-3
         .col-xs-12.col-sm-4.col-md-3.col-lg-2
-          .card-pf.card-pf-view
+          .card-pf.card-pf-view(data-date=image.LastModified)
             .card-pf-body
               .card-pf-top-element
-                  img(src=imageUrl, alt='Image could not be rendered', style='max-height: 100%; width: 100%; object-fit: contain')
-              //.card-pf-title.text-center #{imageUrl}
-              .card-pf-items.text-center
-                a(href=imageUrl, download)
-                  span.fa.fa-arrow-circle-o-down.fa-2x
+                  img(src=image.fullUrl, alt='Image could not be rendered', style='max-height: 100%; width: 100%; object-fit: contain;')
     
 
   div(class='modal' id='adds3bucket' tabindex='-1' role='dialog')
@@ -67,6 +72,22 @@ block content
 
   script(type='text/javascript').
     $(document).ready(function() {
+      $('.datepicker').datepicker();
+      $('#dateFilterButton').click(function() {
+        console.log($(this).val());
+        var urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('start_date', $('#start-date').val());
+        urlParams.set('end_date', $('#end-date').val());
+        document.location.href = '/?' + urlParams.toString();
+      });
+      $('.page-link').click(function() {
+        var start = $('#start-date').val();
+        var end = $('#end-date').val();
+        var urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('page', $(this).text());
+        document.location.href = '/?' + urlParams.toString();
+      });
+
       // matchHeight the contents of each .card-pf and then the .card-pf itself
       $(".row-cards-pf > [class*='col'] > .card-pf .card-pf-title").matchHeight();
       $(".row-cards-pf > [class*='col'] > .card-pf > .card-pf-body").matchHeight();

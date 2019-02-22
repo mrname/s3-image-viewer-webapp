@@ -7,9 +7,17 @@ var awsregion = process.env.AWS_REGION || 'us-east-1';
 var showBucket = process.env.S3_BUCKET;
 var imgPath = process.env.IMG_PATH;
 var pageTitle = process.env.PAGE_TITLE || 'AWS S3 Image Viewer'; 
-var AWS = require('aws-sdk');
-AWS.config.update({accessKeyId: awskey, secretAccessKey: awssecretkey, region: awsregion});
-var s3 = new AWS.S3();
+const pageSize = process.env.PAGE_SIZE || 100;
+
+const s3 = require('s3-cached')({
+  bucket: showBucket,
+  s3Options: {
+    accessKeyId: awskey,
+    secretAccessKey: awssecretkey
+  }
+});
+
+const S3_PREFIX = 'https://s3.amazonaws.com/' + showBucket + '/';
 
 //var IMAGE_TYPEFILTER = process.env.IMAGE_TYPEFILTER || '.png,.jpg';
 
@@ -18,52 +26,69 @@ var s3 = new AWS.S3();
 //----------------------------------------------------------------------------
 function filterImages(data) {
     // TODO filter based on types configured (case insensitive)
-    return data;
+    // Since we have the full objects here, we now need to return an array of
+    // just the actual URLs
+    images = [];
+    for (var iter in data) {
+        // any validation of key can go here
+        data[iter].fullUrl = S3_PREFIX + data[iter].Key;
+        //console.log(data[iter]);
+        console.log("adding " + S3_PREFIX + data[iter].Key)
+        images.push(data[iter]);
+    }
+    return images;
 }
 
 //----------------------------------------------------------------------------
 // loop through S3 formatted API results and build an images list
 //----------------------------------------------------------------------------
 function buildImagesListFromS3Data(params, images, cb) {
-    const S3_PREFIX = 'https://s3.amazonaws.com/' + showBucket + '/';
     if (!images) {
         images = [];
     }
-    if (!params) {
-        params = {
-          Bucket: showBucket,
-          //ContinuationToken: 'STRING_VALUE',
-          //Delimiter: 'STRING_VALUE',
-          //EncodingType: url,
-          //FetchOwner: false,
-          //MaxKeys: 50,
-          Prefix: imgPath,
-          //RequestPayer: requester,
-          //StartAfter: imgPath
-        };
+    var page = params.page || 1;
+    if (page == 1) {
+        var startImg = 0;
+        var endImg = pageSize - 1;
+    } else {
+        var startImg = (page - 1) * pageSize;
+        var endImg = startImg + pageSize - 1;
     }
-    s3.listObjectsV2(params, function(err, data) {
-      if (err) {
-        console.log(err, err.stack); // an error occurred
-        return images;
-      } else {
-        //console.log(data);
-        var contents = data.Contents
-        //console.log("iterating " + JSON.stringify(contents));
-        for (var iter in contents) {
-            // any validation of key can go here
-            console.log("adding " + S3_PREFIX + contents[iter].Key)
-            images.push(S3_PREFIX + contents[iter].Key);
+    console.log('start img: ' + startImg);
+    console.log('end img: ' + endImg);
+    
+    s3.getKeysCached(imgPath).then((data) => {
+        var images = [];
+
+        for (var iter in data) {
+            images.push(data[iter]);
         }
-        if (data.isTruncated) {
-           params.Marker = contents[contents.length-1].Key; 
-           images = buildImagesListFromS3Data(params, images, cb);
-        }
-        else {
+
+        if (params['start']) {
+            console.log('Removing images created before ' + params['start']);
+            var images = images.filter(image => new Date(params['start']) <= new Date(image.LastModified));
             console.log(images);
-            cb(images);
-        }
-      }
+        };
+        if (params['end']) {
+            console.log('Removing images created after ' + params['end']);
+            var images = images.filter(image => new Date(params['end']) >= new Date(image.LastModified));
+            console.log(images);
+        };
+
+        images.sort(function(a,b){
+          return new Date(b.LastModified) - new Date(a.LastModified);
+        });
+
+        var numPages = Math.ceil(images.length / pageSize);
+        console.log('total images: ' + images.length);
+        console.log('num pages: ' + numPages);
+
+        // Paginate
+        var paginatedImages = images.slice(startImg, endImg);
+
+        cb(paginatedImages, numPages);
+    }).catch((err) => {
+        console.log(err, err.stack); // an error occurred
     });
 }
 
@@ -72,15 +97,23 @@ function buildImagesListFromS3Data(params, images, cb) {
 //----------------------------------------------------------------------------
 router.get('/', function(req, res, next) {
 
+  var start = req.query.start_date;
+  var end = req.query.end_date;
+  var page = req.query.page;
+  var params = {
+      start: start,
+      end: end,
+      page: page
+  }
   var imagesArray = [];
   if (!showBucket) { 
     console.log('no bucket, forcing to first bucket');
   }
   console.log('loading bucket: ' + showBucket);
 
-  buildImagesListFromS3Data(null, null, function(result) {
+  buildImagesListFromS3Data(params, null, function(result, numPages) {
     filteredImagesArray = filterImages(result);
-    res.render('index', { title: pageTitle, showBucket: showBucket, images: JSON.stringify(filteredImagesArray)});
+    res.render('index', { title: pageTitle, showBucket: showBucket, images: JSON.stringify(filteredImagesArray), numPages: numPages });
   });
 });
 
