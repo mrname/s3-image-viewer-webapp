@@ -32,7 +32,7 @@ function filterImages(data) {
     for (var iter in data) {
         // any validation of key can go here
         data[iter].fullUrl = S3_PREFIX + data[iter].Key;
-        console.log(data[iter]);
+        //console.log(data[iter]);
         console.log("adding " + S3_PREFIX + data[iter].Key)
         images.push(data[iter]);
     }
@@ -49,11 +49,13 @@ function buildImagesListFromS3Data(params, images, cb) {
     var page = params.page || 1;
     if (page == 1) {
         var startImg = 0;
-        var endImg = pageSize;
+        var endImg = pageSize - 1;
     } else {
-        var startImg = page * pageSize;
-        var endImg = startImg + pageSize;
+        var startImg = (page - 1) * pageSize;
+        var endImg = startImg + pageSize - 1;
     }
+    console.log('start img: ' + startImg);
+    console.log('end img: ' + endImg);
     
     s3.getKeysCached(imgPath).then((data) => {
         var images = [];
@@ -78,7 +80,8 @@ function buildImagesListFromS3Data(params, images, cb) {
         });
 
         var numPages = Math.ceil(images.length / pageSize);
-        console.log(numPages);
+        console.log('total images: ' + images.length);
+        console.log('num pages: ' + numPages);
 
         // Paginate
         var paginatedImages = images.slice(startImg, endImg);
